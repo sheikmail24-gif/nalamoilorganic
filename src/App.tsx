@@ -13,56 +13,103 @@ import CartDrawer from './components/CartDrawer';
 import SearchOverlay from './components/SearchOverlay';
 import Notification from './components/Notification';
 import AdminDashboard from './components/AdminDashboard';
-import { Settings, Send } from 'lucide-react';
+import { Settings, ShoppingBag, Loader2 } from 'lucide-react';
 
-// --- New Backend Connection Component ---
-function BackendTest() {
-  const [userName, setUserName] = useState("");
-  const [serverMessage, setServerMessage] = useState("");
+// --- Professional Order Form (Connected to Supabase) ---
+function QuickOrderForm() {
+  const [formData, setFormData] = useState({ name: "", phone: "", product: "Groundnut Oil 1L" });
+  const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const callBackend = async () => {
+  const handleOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
+    setStatus("");
+    
     try {
-      // Calls your Vercel Function at /api/greet.js
-      const response = await fetch(`/api/greet?name=${userName}`);
+      const response = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      
       const data = await response.json();
-      setServerMessage(data.message);
+      if (response.ok) {
+        setStatus("✅ Order received! We will call you soon.");
+        setFormData({ name: "", phone: "", product: "Groundnut Oil 1L" }); // Reset form
+      } else {
+        setStatus("❌ Error: " + data.error);
+      }
     } catch (error) {
-      setServerMessage("Error: Could not find backend API.");
+      setStatus("❌ Could not connect to the database.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="py-16 bg-white border-t border-gray-100">
-      <div className="max-w-xl mx-auto px-4 text-center">
-        <h3 className="text-2xl font-bold text-[#2D5A27] mb-2">Backend Connection Test</h3>
-        <p className="text-gray-600 mb-6">Enter your name to verify the server is working.</p>
-        
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <input 
-            type="text" 
-            className="border-2 border-gray-200 p-3 rounded-xl outline-none focus:border-[#2D5A27] transition-all flex-1"
-            placeholder="Your Name..." 
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)} 
-          />
-          <button 
-            onClick={callBackend}
-            disabled={loading}
-            className="bg-[#2D5A27] text-white px-8 py-3 rounded-xl hover:bg-[#234a1f] transition-all flex items-center justify-center gap-2 font-semibold disabled:opacity-50"
-          >
-            {loading ? "Connecting..." : <><Send size={18} /> Test Connection</>}
-          </button>
-        </div>
-        
-        {serverMessage && (
-          <div className="mt-6 p-4 bg-[#FAF3E8] rounded-lg border border-[#2D5A27]/20 text-[#2D5A27] font-medium animate-bounce">
-            {serverMessage}
+    <div className="py-16 bg-[#FAF3E8]/50 border-y border-[#2D5A27]/10">
+      <div className="max-w-xl mx-auto px-4">
+        <div className="bg-white p-8 rounded-3xl shadow-xl border border-[#2D5A27]/5">
+          <div className="text-center mb-8">
+            <h3 className="text-3xl font-bold text-[#2D5A27] mb-2">Quick Order</h3>
+            <p className="text-gray-600 text-sm">Fill in your details and we'll handle the rest.</p>
           </div>
-        )}
+
+          <form onSubmit={handleOrder} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold uppercase text-gray-500 mb-1 ml-1">Your Name</label>
+              <input 
+                className="w-full p-4 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#2D5A27] outline-none transition-all"
+                placeholder="Full Name"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase text-gray-500 mb-1 ml-1">Phone Number</label>
+              <input 
+                type="tel"
+                className="w-full p-4 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#2D5A27] outline-none transition-all"
+                placeholder="+91 00000 00000"
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase text-gray-500 mb-1 ml-1">Select Product</label>
+              <select 
+                className="w-full p-4 rounded-xl border border-gray-100 bg-gray-50 outline-none appearance-none cursor-pointer"
+                value={formData.product}
+                onChange={(e) => setFormData({...formData, product: e.target.value})}
+              >
+                <option>Groundnut Oil 1L</option>
+                <option>Coconut Oil 1L</option>
+                <option>Sesame Oil 1L</option>
+                <option>Organic Ghee 500ml</option>
+              </select>
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-[#2D5A27] text-white py-4 rounded-xl font-bold hover:bg-[#234a1f] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#2D5A27]/20 disabled:opacity-50"
+            >
+              {loading ? <Loader2 className="animate-spin" /> : <ShoppingBag size={20} />}
+              {loading ? "Processing..." : "Place Quick Order"}
+            </button>
+          </form>
+
+          {status && (
+            <div className={`mt-6 p-4 rounded-xl text-center font-medium ${status.includes('✅') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+              {status}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -129,11 +176,10 @@ export default function App() {
             limit={4}
           />
 
-          <Testimonials />
-          
-          {/* We added the Backend Test here */}
-          <BackendTest />
+          {/* Quick Order Form replaces the Backend Test */}
+          <QuickOrderForm />
 
+          <Testimonials />
           <Newsletter />
         </main>
 
