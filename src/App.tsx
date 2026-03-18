@@ -99,7 +99,7 @@ export default function App() {
     const pass = prompt("Admin Password:");
 
     // USERNAME: admin | PASSWORD:Sm@2026 
-    if (user === "admin" && pass === "Nalam2026") {
+    if (user === "admin" && pass === "Sm@2026") {
       setIsAdminAuthenticated(true);
       setShowAdmin(true);
     } else {
