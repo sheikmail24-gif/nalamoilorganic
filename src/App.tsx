@@ -13,7 +13,60 @@ import CartDrawer from './components/CartDrawer';
 import SearchOverlay from './components/SearchOverlay';
 import Notification from './components/Notification';
 import AdminDashboard from './components/AdminDashboard';
-import { Settings } from 'lucide-react';
+import { Settings, Send } from 'lucide-react';
+
+// --- New Backend Connection Component ---
+function BackendTest() {
+  const [userName, setUserName] = useState("");
+  const [serverMessage, setServerMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const callBackend = async () => {
+    setLoading(true);
+    try {
+      // Calls your Vercel Function at /api/greet.js
+      const response = await fetch(`/api/greet?name=${userName}`);
+      const data = await response.json();
+      setServerMessage(data.message);
+    } catch (error) {
+      setServerMessage("Error: Could not find backend API.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="py-16 bg-white border-t border-gray-100">
+      <div className="max-w-xl mx-auto px-4 text-center">
+        <h3 className="text-2xl font-bold text-[#2D5A27] mb-2">Backend Connection Test</h3>
+        <p className="text-gray-600 mb-6">Enter your name to verify the server is working.</p>
+        
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <input 
+            type="text" 
+            className="border-2 border-gray-200 p-3 rounded-xl outline-none focus:border-[#2D5A27] transition-all flex-1"
+            placeholder="Your Name..." 
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)} 
+          />
+          <button 
+            onClick={callBackend}
+            disabled={loading}
+            className="bg-[#2D5A27] text-white px-8 py-3 rounded-xl hover:bg-[#234a1f] transition-all flex items-center justify-center gap-2 font-semibold disabled:opacity-50"
+          >
+            {loading ? "Connecting..." : <><Send size={18} /> Test Connection</>}
+          </button>
+        </div>
+        
+        {serverMessage && (
+          <div className="mt-6 p-4 bg-[#FAF3E8] rounded-lg border border-[#2D5A27]/20 text-[#2D5A27] font-medium animate-bounce">
+            {serverMessage}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const [showAdmin, setShowAdmin] = useState(false);
@@ -72,11 +125,15 @@ export default function App() {
           <ProductSection
             title="New Arrivals"
             subtitle="Just Landed"
-            filter={(p) => p.badge === 'New' || p.badge === 'Premium'}
+            filter={(p) => (p.badge === 'New' || p.badge === 'Premium')}
             limit={4}
           />
 
           <Testimonials />
+          
+          {/* We added the Backend Test here */}
+          <BackendTest />
+
           <Newsletter />
         </main>
 
